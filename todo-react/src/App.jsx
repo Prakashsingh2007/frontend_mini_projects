@@ -1,122 +1,105 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState , useEffect } from "react";
+import TodoInput from "./components/Todoinput";
+import TodoList from "./components/Todolist";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all"); // New state for filter
+  const [search, setSearch] = useState(""); // New state for search
+  const filteredTasks = tasks.filter(task => {
+    if (filter === "completed") {
+      return task.completed;
+    } else if (filter === "incomplete") {
+      return !task.completed;
+    }
+    return true; // Show all tasks for "all" filter
+  }).filter(task => task.text.toLowerCase().includes(search.toLowerCase())); // Filter by search query
+  useEffect(() => {
+    const storedTasks = localStorage.getItem("tasks");
+    if (storedTasks) {
+      setTasks(JSON.parse(storedTasks));
+    }
+    setLoading(false);
+  }, []);
 
+  useEffect(() => {
+    if (loading) return;
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks,loading]);
+
+  function addTask() {
+    if (input.trim() === "") return;
+
+    const newTask = {
+      text: input,
+      completed: false
+    };
+
+    setTasks([...tasks, newTask]); //  React update
+    setInput(""); // clear input
+  }
+  function deleteTask(index) {
+    const newTasks = [...tasks];
+    newTasks.splice(index, 1);
+    setTasks(newTasks);
+  }
+  function toggleTaskCompletion(index) {
+
+  const updatedTasks = tasks.map((task, i) => {
+
+    if (i === index) {
+      return {
+        ...task,
+        completed: !task.completed
+      };
+    }
+
+    return task;
+
+  });
+
+  setTasks(updatedTasks);
+}
+const total = tasks.length;
+
+const completed = tasks.filter(
+  task => task.completed
+).length;
+
+const pending = total - completed;
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div>
+      <h1>Todo App</h1>
 
-      <div className="ticks"></div>
+      <TodoInput 
+        addTask={addTask} 
+        input={input} 
+        setInput={setInput} 
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <TodoList
+        tasks={filteredTasks}
+        deleteTask={deleteTask}
+        toggleTaskCompletion={toggleTaskCompletion}
+      />
+    
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    
+      <button onClick={() => setFilter("all")}>All</button>
+      <button onClick={() => setFilter("completed")}>Completed</button>
+      <button onClick={() => setFilter("incomplete")}>Incomplete</button>
+    
+
+      <input 
+        type="text"
+        placeholder="Search tasks"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </div>  
+  );
 }
 
-export default App
+export default App;
