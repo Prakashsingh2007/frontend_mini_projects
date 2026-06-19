@@ -1,105 +1,76 @@
-import { useState , useEffect } from "react";
-import TodoInput from "./components/Todoinput";
-import TodoList from "./components/Todolist";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 
-function App() {
-  const [tasks, setTasks] = useState([]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // New state for filter
-  const [search, setSearch] = useState(""); // New state for search
-  const filteredTasks = tasks.filter(task => {
-    if (filter === "completed") {
-      return task.completed;
-    } else if (filter === "incomplete") {
-      return !task.completed;
-    }
-    return true; // Show all tasks for "all" filter
-  }).filter(task => task.text.toLowerCase().includes(search.toLowerCase())); // Filter by search query
-  useEffect(() => {
-    const storedTasks = localStorage.getItem("tasks");
-    if (storedTasks) {
-      setTasks(JSON.parse(storedTasks));
-    }
-    setLoading(false);
-  }, []);
+import Navbar from "./components/Navbar";
 
-  useEffect(() => {
-    if (loading) return;
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks,loading]);
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import NotFound from "./pages/NotFound";
+import Login from "./components/Login";
+import ProtectionRoute from "./components/ProtectionRoute";
+import Todo from "./pages/Todo";
+function App(){
 
-  function addTask() {
-    if (input.trim() === "") return;
+return(
 
-    const newTask = {
-      text: input,
-      completed: false
-    };
+<BrowserRouter>
 
-    setTasks([...tasks, newTask]); //  React update
-    setInput(""); // clear input
-  }
-  function deleteTask(index) {
-    const newTasks = [...tasks];
-    newTasks.splice(index, 1);
-    setTasks(newTasks);
-  }
-  function toggleTaskCompletion(index) {
+<Navbar/>
 
-  const updatedTasks = tasks.map((task, i) => {
 
-    if (i === index) {
-      return {
-        ...task,
-        completed: !task.completed
-      };
-    }
+<Routes>
 
-    return task;
+<Route 
+path="/" 
+element={<Home/>}
+/>
 
-  });
+<Route
+path="/todo"
+element={<Todo/>}
+/>
 
-  setTasks(updatedTasks);
+<Route 
+path="/about" 
+element={<About/>}
+/>
+
+
+<Route 
+path="/profile/:username" 
+element={<Profile/>}
+/>
+
+
+<Route 
+path="/dashboard" 
+element={
+<ProtectionRoute>
+<Dashboard/>
+</ProtectionRoute>
 }
-const total = tasks.length;
+/>
 
-const completed = tasks.filter(
-  task => task.completed
-).length;
+<Route
+path="/login"
+element={<Login/>}
+/>
 
-const pending = total - completed;
-  return (
-    <div>
-      <h1>Todo App</h1>
+<Route 
+path="*" 
+element={<NotFound/>}
+/>
 
-      <TodoInput 
-        addTask={addTask} 
-        input={input} 
-        setInput={setInput} 
-      />
 
-      <TodoList
-        tasks={filteredTasks}
-        deleteTask={deleteTask}
-        toggleTaskCompletion={toggleTaskCompletion}
-      />
-    
+</Routes>
 
-    
-      <button onClick={() => setFilter("all")}>All</button>
-      <button onClick={() => setFilter("completed")}>Completed</button>
-      <button onClick={() => setFilter("incomplete")}>Incomplete</button>
-    
 
-      <input 
-        type="text"
-        placeholder="Search tasks"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-    </div>  
-  );
+</BrowserRouter>
+
+)
+
 }
+
 
 export default App;
