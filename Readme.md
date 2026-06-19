@@ -140,8 +140,7 @@ Possible improvements:
 
 **Prakash Singh**
 
-B.Tech CSE Student  
-Learning Full Stack Development, AI Integration, and Modern Web Technologies
+
 
 ---
 
